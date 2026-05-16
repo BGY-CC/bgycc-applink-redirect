@@ -1,14 +1,17 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-const APPSFLYER_URLS = {
-  'dev-invite': process.env.APPSFLYER_DEV_URL || "https://dev.app.bgyccommunity.com/N8R5",
-  'stg-invite': process.env.APPSFLYER_STG_URL || "https://stg.app.bgyccommunity.com/N8R5",
-  'invite': process.env.APPSFLYER_PROD_URL || "https://app.bgyccommunity.com/N8R5"
-};
+// Single Source of Truth for AppsFlyer OneLink
+const APPSFLYER_ONELINK_BASE = process.env.APPSFLYER_ONELINK_BASE;
+
+if (!APPSFLYER_ONELINK_BASE) {
+  console.error('FATAL: APPSFLYER_ONELINK_BASE environment variable is not set.');
+  process.exit(1);
+}
 
 // Serve the .well-known directory for Apple App Site Association and Android Asset Links
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), {
@@ -26,23 +29,27 @@ const handleInviteRedirect = (req, res, pathPrefix) => {
   const code = req.params.code;
   if (!code) return res.status(400).send('Referral code missing');
 
-  const baseUrl = APPSFLYER_URLS[pathPrefix];
-  const appsflyerUrl = new URL(baseUrl);
-  appsflyerUrl.searchParams.append('deep_link_value', code);
+  try {
+    const appsflyerUrl = new URL(APPSFLYER_ONELINK_BASE);
+    appsflyerUrl.searchParams.append('deep_link_value', code);
+    
+    // Important: We pass the flavored path so the app knows which environment it's in
+    appsflyerUrl.searchParams.append('path', `${pathPrefix}/${code}`);
+    
+    appsflyerUrl.searchParams.append('af_channel', 'User_invite');
+    appsflyerUrl.searchParams.append('media_source', 'User_invite');
+    
+    // Forward additional query parameters
+    Object.keys(req.query).forEach(key => {
+      appsflyerUrl.searchParams.append(key, req.query[key]);
+    });
 
-  // Important: We pass the flavored path so the app knows which environment it's in
-  appsflyerUrl.searchParams.append('path', `${pathPrefix}/${code}`);
-
-  appsflyerUrl.searchParams.append('af_channel', 'User_invite');
-  appsflyerUrl.searchParams.append('media_source', 'User_invite');
-  
-  // Forward additional query parameters
-  Object.keys(req.query).forEach(key => {
-    appsflyerUrl.searchParams.append(key, req.query[key]);
-  });
-
-  console.log(`Redirecting [${pathPrefix}]: ${code} -> ${appsflyerUrl.toString()}`);
-  res.redirect(302, appsflyerUrl.toString());
+    console.log(`Redirecting [${pathPrefix}]: ${code} -> ${appsflyerUrl.toString()}`);
+    res.redirect(302, appsflyerUrl.toString());
+  } catch (error) {
+    console.error('Redirect error:', error);
+    res.status(500).send('Internal Server Error: Invalid redirect configuration');
+  }
 };
 
 // Flavor-based routes
@@ -57,5 +64,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Redirect server listening on port ${PORT}`);
-  console.log(`Configured AppsFlyer URLs:`, APPSFLYER_URLS);
+  console.log(`Configured AppsFlyer Base: ${APPSFLYER_ONELINK_BASE}`);
 });
