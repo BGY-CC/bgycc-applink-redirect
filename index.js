@@ -3,13 +3,16 @@ const express = require('express');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const APPSFLYER_BASE_URL = process.env.APPSFLYER_BASE_URL;
+
+const APPSFLYER_URLS = {
+  'dev-invite': process.env.APPSFLYER_DEV_URL || "https://dev.app.bgyccommunity.com/N8R5",
+  'stg-invite': process.env.APPSFLYER_STG_URL || "https://stg.app.bgyccommunity.com/N8R5",
+  'invite': process.env.APPSFLYER_PROD_URL || "https://app.bgyccommunity.com/N8R5"
+};
 
 // Serve the .well-known directory for Apple App Site Association and Android Asset Links
-// Ensure the folder contains 'apple-app-site-association' (no .json extension for iOS)
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), {
   setHeaders: (res, filePath) => {
-    // iOS requires the AASA file to be served with application/json or application/pkcs7-mime
     if (filePath.endsWith('apple-app-site-association')) {
       res.setHeader('Content-Type', 'application/json');
     }
@@ -17,28 +20,35 @@ app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), {
 }));
 
 /**
- * Redirects /invite/:code to the AppsFlyer OneLink
+ * Core redirect logic
  */
-app.get('/invite/:code', (req, res) => {
+const handleInviteRedirect = (req, res, pathPrefix) => {
   const code = req.params.code;
-  
-  if (!code) {
-    return res.status(400).send('Referral code missing');
-  }
+  if (!code) return res.status(400).send('Referral code missing');
 
-  const appsflyerUrl = new URL(APPSFLYER_BASE_URL);
+  const baseUrl = APPSFLYER_URLS[pathPrefix];
+  const appsflyerUrl = new URL(baseUrl);
   appsflyerUrl.searchParams.append('deep_link_value', code);
-  appsflyerUrl.searchParams.append('path', `invite/${code}`);
+
+  // Important: We pass the flavored path so the app knows which environment it's in
+  appsflyerUrl.searchParams.append('path', `${pathPrefix}/${code}`);
+
   appsflyerUrl.searchParams.append('af_channel', 'User_invite');
   appsflyerUrl.searchParams.append('media_source', 'User_invite');
   
+  // Forward additional query parameters
   Object.keys(req.query).forEach(key => {
     appsflyerUrl.searchParams.append(key, req.query[key]);
   });
 
-  console.log(`Redirecting invite: ${code} -> ${appsflyerUrl.toString()}`);
+  console.log(`Redirecting [${pathPrefix}]: ${code} -> ${appsflyerUrl.toString()}`);
   res.redirect(302, appsflyerUrl.toString());
-});
+};
+
+// Flavor-based routes
+app.get('/dev-invite/:code', (req, res) => handleInviteRedirect(req, res, 'dev-invite'));
+app.get('/stg-invite/:code', (req, res) => handleInviteRedirect(req, res, 'stg-invite'));
+app.get('/invite/:code', (req, res) => handleInviteRedirect(req, res, 'invite'));
 
 // Health check
 app.get('/', (req, res) => {
@@ -47,4 +57,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Redirect server listening on port ${PORT}`);
+  console.log(`Configured AppsFlyer URLs:`, APPSFLYER_URLS);
 });
