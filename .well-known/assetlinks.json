@@ -1,0 +1,32 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bgyccommunity.app",
+      "sha256_cert_fingerprints": [
+        "TODO_REPLACE_WITH_PROD_RELEASE_SHA256_BEFORE_LAUNCH"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bgyccommunity.app.stg",
+      "sha256_cert_fingerprints": [
+        "56:F4:02:71:BF:D7:08:51:CF:D8:89:7C:2B:29:1E:25:61:B4:29:48:52:89:12:8D:74:5E:BC:32:16:DF:3C:64"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bgyccommunity.app.dev",
+      "sha256_cert_fingerprints": [
+        "56:F4:02:71:BF:D7:08:51:CF:D8:89:7C:2B:29:1E:25:61:B4:29:48:52:89:12:8D:74:5E:BC:32:16:DF:3C:64"
+      ]
+    }
+  }
+]

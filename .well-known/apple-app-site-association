@@ -1,0 +1,27 @@
+{
+  "_comment": "TODO (pre-launch): Replace all APPLE_TEAM_ID placeholders with your 10-character Apple Developer Team ID (found at developer.apple.com → Account → Membership). Also verify bundle IDs match Xcode.",
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "APPLE_TEAM_ID.com.bgyccommunity.app",
+        "paths": ["/invite/*"]
+      },
+      {
+        "appID": "APPLE_TEAM_ID.com.bgyccommunity.app.stg",
+        "paths": ["/invite/*"]
+      },
+      {
+        "appID": "APPLE_TEAM_ID.com.bgyccommunity.app.dev",
+        "paths": ["/invite/*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "APPLE_TEAM_ID.com.bgyccommunity.app",
+      "APPLE_TEAM_ID.com.bgyccommunity.app.stg",
+      "APPLE_TEAM_ID.com.bgyccommunity.app.dev"
+    ]
+  }
+}
