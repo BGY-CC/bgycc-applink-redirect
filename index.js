@@ -57,3 +57,5 @@ app.listen(PORT, () => {
   console.log(`Redirect server listening on port ${PORT}`);
   console.log(`AppsFlyer Subdomain: ${APPSFLYER_SUBDOMAIN}, Template: ${TEMPLATE_ID}`);
 });
+
+module.exports = app;
