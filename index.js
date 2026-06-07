@@ -5,11 +5,12 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-const TEMPLATE_ID = process.env.APPSFLYER_TEMPLATE_ID;
 const APPSFLYER_SUBDOMAIN = process.env.APPSFLYER_SUBDOMAIN || 'bgycc-app';
 
+const TEMPLATE_ID = process.env.APPSFLYER_TEMPLATE_ID;
+
 if (!TEMPLATE_ID) {
-  console.error('FATAL: APPSFLYER_TEMPLATE_ID is not set.');
+  console.error('FATAL: APPSFLYER_TEMPLATE_ID env var is not set.');
   process.exit(1);
 }
 
